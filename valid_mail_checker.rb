@@ -9,6 +9,17 @@
 require 'net/smtp'
 require 'resolv'
 
+#Capsuling to use MAIL FROM and RCPT TO.
+class Net::SMTP
+  def mail_from(from_addr)
+    mailfrom(from_addr)
+  end
+
+  def rcpt_to(to_addr)
+    rcptto(to_addr)
+  end
+end
+
 HELO = "localhost"
 MAILFROM = "info@localhost"
 
@@ -22,16 +33,16 @@ mail_domain = (mail_adress.split '@')[1]
 resolver = Resolv::DNS.new
 mx_domain = (resolver.getresource mail_domain, Resolv::DNS::Resource::IN::MX).exchange.to_s
 
-Net::SMTP.start mx_domain, 25, HELO do |smtp|
+Net::SMTP.start(mx_domain, 25, HELO) do |smtp|
   begin
-    smtp.mailfrom MAILFROM
+    smtp.mail_from MAILFROM
   rescue
     puts "Server retern error at MAIL FROM."
     exit
   end
 
   begin
-    smtp.rcptto mail_adress
+    smtp.rcpt_to mail_adress
   rescue
     puts "#{mail_adress} is not exist."
     exit
